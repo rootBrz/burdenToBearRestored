@@ -1,4 +1,5 @@
 ﻿#include "main.hpp"
+#include <cstdio>
 
 HMODULE g_hModule = nullptr;
 void *g_burdenToBearPerk = nullptr;
@@ -35,14 +36,15 @@ static __declspec(naked) void ArmorSpeedPenaltyHook()
 
 static bool InstallHook()
 {
-        char path[MAX_PATH];
-        GetModuleFileNameA(g_hModule, path, MAX_PATH);
-        char *ext = strrchr(path, '.');
-        if (ext)
-                strcpy(ext, ".ini");
+        char exePath[MAX_PATH];
+        GetModuleFileNameA(nullptr, exePath, MAX_PATH);
+        char *slash = strrchr(exePath, '\\');
+        if (slash) *(slash + 1) = '\0';
+        char iniPath[MAX_PATH];
+        snprintf(iniPath, MAX_PATH, "%sData\\Config\\BurdenToBearRestored.ini", exePath);
 
         char buf[32];
-        GetPrivateProfileStringA("Settings", "SpeedPenaltyMult", "0", buf, sizeof(buf), path);
+        GetPrivateProfileStringA("Settings", "SpeedPenaltyMult", "0", buf, sizeof(buf), iniPath);
         g_armorSpeedPenaltyMult = static_cast<float>(strtod(buf, nullptr));
 
         g_burdenToBearPerk = GetByID("NVDLC04BurdenToBearPerk");
